@@ -16,6 +16,8 @@ import pymysql
 # --------------------------------------------------
 # PyMySQL CONFIG (Required)
 # --------------------------------------------------
+
+import pymysql
 pymysql.install_as_MySQLdb()
 
 # --------------------------------------------------
@@ -106,14 +108,19 @@ from decouple import config
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 
+from urllib.parse import urlparse
+from decouple import config
+
+db_url = urlparse(config("MYSQL_PUBLIC_URL"))
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": config("MYSQL_DATABASE"),
-        "USER": config("MYSQL_USER"),
-        "PASSWORD": config("MYSQL_PASSWORD"),
-        "HOST": config("MYSQL_HOST", default="localhost"),
-        "PORT": config("MYSQL_PORT", cast=int, default=3306),
+        "NAME": db_url.path.lstrip("/"),
+        "USER": db_url.username,
+        "PASSWORD": db_url.password,
+        "HOST": db_url.hostname,
+        "PORT": db_url.port,
         "OPTIONS": {"charset": "utf8mb4"},
     }
 }
