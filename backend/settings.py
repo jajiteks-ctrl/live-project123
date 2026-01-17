@@ -2,6 +2,7 @@
 Django settings for backend project.
 
 Production-ready settings for:
+- Local development
 - Render
 - External MySQL
 """
@@ -10,14 +11,12 @@ Production-ready settings for:
 # IMPORTS
 # --------------------------------------------------
 from pathlib import Path
-import os
+from decouple import config
 import pymysql
 
 # --------------------------------------------------
-# PyMySQL CONFIG (Required)
+# PyMySQL CONFIG (Required for Windows / Python 3.14)
 # --------------------------------------------------
-
-import pymysql
 pymysql.install_as_MySQLdb()
 
 # --------------------------------------------------
@@ -28,12 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # --------------------------------------------------
 # SECURITY SETTINGS
 # --------------------------------------------------
-SECRET_KEY = os.environ.get(
-    "SECRET_KEY",
-    "django-insecure-local-only-key"
-)
-
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-local-only-key")
+DEBUG = config("DEBUG", cast=bool, default=False)
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -101,27 +96,19 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # --------------------------------------------------
-# DATABASE CONFIG (External MySQL)
+# DATABASE CONFIG (MySQL)
 # --------------------------------------------------
-from decouple import config
-
-SECRET_KEY = config("SECRET_KEY")
-DEBUG = config("DEBUG", cast=bool)
-
-from urllib.parse import urlparse
-from decouple import config
-
-db_url = urlparse(config("MYSQL_PUBLIC_URL"))
-
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": db_url.path.lstrip("/"),
-        "USER": db_url.username,
-        "PASSWORD": db_url.password,
-        "HOST": db_url.hostname,
-        "PORT": db_url.port,
-        "OPTIONS": {"charset": "utf8mb4"},
+        "NAME": config("MYSQL_DATABASE", default="mysql"),
+        "USER": config("MYSQL_USER", default="root"),
+        "PASSWORD": config("MYSQL_PASSWORD", default=""),
+        "HOST": config("MYSQL_HOST", default="localhost"),
+        "PORT": config("MYSQL_PORT", cast=int, default=3306),
+        "OPTIONS": {
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
 }
 
@@ -152,7 +139,7 @@ USE_I18N = True
 USE_TZ = True
 
 # --------------------------------------------------
-# STATIC FILES (Render requirement)
+# STATIC FILES
 # --------------------------------------------------
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
