@@ -4,7 +4,7 @@ Django settings for backend project.
 Production-ready settings for:
 - Local development
 - Render
-- External MySQL
+- External MySQL (removed for SQLite)
 """
 
 # --------------------------------------------------
@@ -12,12 +12,6 @@ Production-ready settings for:
 # --------------------------------------------------
 from pathlib import Path
 from decouple import config
-import pymysql
-
-# --------------------------------------------------
-# PyMySQL CONFIG (Required for Windows / Python 3.14)
-# --------------------------------------------------
-pymysql.install_as_MySQLdb()
 
 # --------------------------------------------------
 # BASE DIRECTORY
@@ -52,11 +46,11 @@ INSTALLED_APPS = [
 
     # Local apps
     "app",
-     'corsheaders',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -98,19 +92,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "backend.wsgi.application"
 
 # --------------------------------------------------
-# DATABASE CONFIG (MySQL)
+# DATABASE CONFIG (SQLite)
 # --------------------------------------------------
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": config("MYSQL_DATABASE", default="mysql"),
-        "USER": config("MYSQL_USER", default="root"),
-        "PASSWORD": config("MYSQL_PASSWORD", default=""),
-        "HOST": config("MYSQL_HOST", default="localhost"),
-        "PORT": config("MYSQL_PORT", cast=int, default=3306),
-        "OPTIONS": {
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 }
 
@@ -151,6 +138,9 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # --------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# --------------------------------------------------
+# CORS SETTINGS
+# --------------------------------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
