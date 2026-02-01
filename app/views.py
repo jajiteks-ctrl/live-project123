@@ -35,3 +35,23 @@ class ProfileView(generics.RetrieveAPIView):
     
         
        
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
+from .models import Product, Category
+from .serializers import ProductSerializer, CategorySerializer
+
+
+class ProductCreateView(CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    
+
+from rest_framework.generics import CreateAPIView
+
+class CategoryCreateView(CreateAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+class CategoryWiseProductView(ListAPIView):
+    queryset = Category.objects.prefetch_related("products")
+    serializer_class = CategorySerializer

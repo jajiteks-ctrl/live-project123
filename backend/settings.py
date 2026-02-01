@@ -1,28 +1,30 @@
 """
 Django settings for backend project.
 
-Production-ready settings for:
+Works for:
 - Local development
-- Render
-- External MySQL (removed for SQLite)
+- React build integration
+- Render deployment
 """
 
 # --------------------------------------------------
 # IMPORTS
 # --------------------------------------------------
+import os
 from pathlib import Path
 from decouple import config
 
 # --------------------------------------------------
 # BASE DIRECTORY
 # --------------------------------------------------
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # --------------------------------------------------
-# SECURITY SETTINGS
+# SECURITY
 # --------------------------------------------------
 SECRET_KEY = config("SECRET_KEY", default="django-insecure-local-only-key")
-DEBUG = config("DEBUG", cast=bool, default=False)
+
+DEBUG = config("DEBUG", cast=bool, default=True)
 
 ALLOWED_HOSTS = [
     "localhost",
@@ -31,7 +33,7 @@ ALLOWED_HOSTS = [
 ]
 
 # --------------------------------------------------
-# APPLICATION DEFINITION
+# APPLICATIONS
 # --------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -43,12 +45,15 @@ INSTALLED_APPS = [
 
     # Third-party
     "rest_framework",
+    "corsheaders",
 
     # Local apps
     "app",
-    "corsheaders",
 ]
 
+# --------------------------------------------------
+# MIDDLEWARE
+# --------------------------------------------------
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
@@ -61,26 +66,24 @@ MIDDLEWARE = [
 ]
 
 # --------------------------------------------------
-# DJANGO REST FRAMEWORK (JWT)
-# --------------------------------------------------
-REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
-}
-
-# --------------------------------------------------
-# URLS & TEMPLATES
+# URLS / WSGI
 # --------------------------------------------------
 ROOT_URLCONF = "backend.urls"
+WSGI_APPLICATION = "backend.wsgi.application"
 
+# --------------------------------------------------
+# TEMPLATES
+# --------------------------------------------------
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [
+            os.path.join(BASE_DIR, "frontend", "build"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
+                "django.template.context_processors.debug",
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
@@ -89,10 +92,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "backend.wsgi.application"
-
 # --------------------------------------------------
-# DATABASE CONFIG (SQLite)
+# DATABASE (SQLite)
 # --------------------------------------------------
 DATABASES = {
     "default": {
@@ -105,18 +106,10 @@ DATABASES = {
 # PASSWORD VALIDATION
 # --------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 # --------------------------------------------------
@@ -131,15 +124,34 @@ USE_TZ = True
 # STATIC FILES
 # --------------------------------------------------
 STATIC_URL = "/static/"
-STATIC_ROOT = BASE_DIR / "staticfiles"
+import os
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "frontend", "build", "static"),
+]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # --------------------------------------------------
-# DEFAULT PRIMARY KEY FIELD TYPE
+# DEFAULT PRIMARY KEY
 # --------------------------------------------------
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # --------------------------------------------------
-# CORS SETTINGS
+# DJANGO REST FRAMEWORK (JWT)
+# --------------------------------------------------
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+# --------------------------------------------------
+# CORS
 # --------------------------------------------------
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
