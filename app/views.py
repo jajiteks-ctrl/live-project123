@@ -32,7 +32,8 @@ class ProfileView(generics.RetrieveAPIView):
     def get_object(self):
        return self.request.user
     
-    
+   
+
         
        
 from rest_framework.generics import CreateAPIView, ListAPIView
@@ -55,3 +56,5 @@ class CategoryCreateView(CreateAPIView):
 class CategoryWiseProductView(ListAPIView):
     queryset = Category.objects.prefetch_related("products")
     serializer_class = CategorySerializer
+
+
